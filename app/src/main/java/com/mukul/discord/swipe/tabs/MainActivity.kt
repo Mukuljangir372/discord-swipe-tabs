@@ -49,7 +49,11 @@ class MainActivity : ComponentActivity() {
                             )
                         )
                     }
-                    val leftEndpointDp by remember(screenWidth) { mutableStateOf(screenWidth.times(-0.4f)) }
+
+                    val leftEndpointDp by remember(screenWidth) {
+                        mutableStateOf(screenWidth.times(-0.4f))
+                    }
+
                     val rightEndpointDp by remember(screenWidth) {
                         mutableStateOf(
                             screenWidth.times(
