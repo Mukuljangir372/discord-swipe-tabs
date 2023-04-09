@@ -18,7 +18,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             DiscordswipetabsTheme {
-                TwoPanelsScreen()
+                LeftTwoPanelsScreen()
+//                RightTwoPanelsScreen()
 //                ThreePanelsScreen()
             }
         }

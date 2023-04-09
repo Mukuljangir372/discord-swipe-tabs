@@ -21,49 +21,41 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun RightTwoPanelsScreen() {
+fun LeftTwoPanelsScreen() {
     Surface {
         val density = LocalDensity.current
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
         val screenCenterDp by remember(screenWidth) {
-            mutableStateOf(
-                screenWidth.times(
-                    0.5f
-                )
-            )
+            mutableStateOf(screenWidth.times(0.5f))
         }
 
-        val rightEndpointDp by remember(screenWidth) {
-            mutableStateOf(
-                screenWidth.times(
-                    1.4f
-                )
-            )
+        val leftEndpointDp by remember(screenWidth) {
+            mutableStateOf(screenWidth.times(-1.4f))
         }
 
         val screenCenterPx by remember(screenCenterDp) {
             mutableStateOf(with(density) { screenCenterDp.toPx() })
         }
 
-        val rightEndpointPx by remember(rightEndpointDp) {
-            mutableStateOf(with(density) { rightEndpointDp.toPx() })
+        val leftEndpointPx by remember(leftEndpointDp) {
+            mutableStateOf(with(density) { leftEndpointDp.toPx() })
         }
 
-        val rightSwipeableState =
-            rememberSwipeableState(initialValue = CenterScreenState.RIGHT_ANCHORED)
+        val leftSwipeableState =
+            rememberSwipeableState(initialValue = CenterScreenState.LEFT_ANCHORED)
 
-        val rightAnchors = mapOf(
+        val leftAnchors = mapOf(
             screenCenterPx to CenterScreenState.CENTER,
-            rightEndpointPx to CenterScreenState.RIGHT_ANCHORED
+            leftEndpointPx to CenterScreenState.LEFT_ANCHORED
         )
 
-        val rightDrawerOnTop by remember {
+        val leftDrawerOnTop by remember {
             derivedStateOf {
-                when (rightSwipeableState.currentValue) {
+                when (leftSwipeableState.currentValue) {
                     CenterScreenState.LEFT_ANCHORED -> DrawerTypes.RIGHT
                     CenterScreenState.CENTER -> {
-                        if (rightSwipeableState.direction < 0) DrawerTypes.RIGHT
+                        if (leftSwipeableState.direction < 0) DrawerTypes.RIGHT
                         else DrawerTypes.LEFT
                     }
                     CenterScreenState.RIGHT_ANCHORED -> DrawerTypes.LEFT
@@ -73,12 +65,12 @@ fun RightTwoPanelsScreen() {
 
         val isAnyItemSelectedInServers: Boolean by remember { mutableStateOf(true) }
 
-        val rightSwipeableModifier by remember(isAnyItemSelectedInServers) {
+        val leftSwipeableModifier by remember(isAnyItemSelectedInServers) {
             mutableStateOf(
                 if (isAnyItemSelectedInServers) {
                     Modifier.swipeable(
-                        state = rightSwipeableState,
-                        anchors = rightAnchors,
+                        state = leftSwipeableState,
+                        anchors = leftAnchors,
                         thresholds = { _, _ -> FractionalThreshold(0.5f) },
                         orientation = Orientation.Horizontal
                     )
@@ -88,18 +80,25 @@ fun RightTwoPanelsScreen() {
             )
         }
 
-        val leftDrawerModifier by remember(rightDrawerOnTop, isAnyItemSelectedInServers) {
+        val leftDrawerModifier by remember(leftDrawerOnTop, isAnyItemSelectedInServers) {
             mutableStateOf(
-                rightSwipeableModifier
+                leftSwipeableModifier
                     .zIndex(0f)
-                    .alpha(if (rightDrawerOnTop == DrawerTypes.LEFT) 1f else 0f)
+                    .alpha(1f)
+                    .offset {
+                        if (leftDrawerOnTop == DrawerTypes.LEFT) {
+                            IntOffset(leftSwipeableState.offset.value.roundToInt(), 0)
+                        } else {
+                            IntOffset.Zero
+                        }
+                    }
             )
         }
 
         val centerScreenOffset by remember {
             derivedStateOf {
-                if (rightDrawerOnTop == DrawerTypes.LEFT) {
-                    (rightSwipeableState.offset.value - screenCenterPx).roundToInt()
+                if (leftDrawerOnTop == DrawerTypes.RIGHT) {
+                    (leftSwipeableState.offset.value - screenCenterPx).roundToInt()
                 } else {
                     0
                 }
@@ -114,9 +113,8 @@ fun RightTwoPanelsScreen() {
             Column(
                 modifier = leftDrawerModifier
                     .align(Alignment.CenterStart)
-                    .fillMaxHeight()
-                    .fillMaxWidth(0.85f)
-                    .background(Color.Black)
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
             ) {
                 Text(text = "left panel screen")
             }
@@ -124,13 +122,13 @@ fun RightTwoPanelsScreen() {
             // Center Panel ----------------------------------------------------
             val centerScreenZIndex by remember {
                 derivedStateOf {
-                    if (rightSwipeableState.isAnimationRunning || rightSwipeableState.currentValue == CenterScreenState.CENTER || rightSwipeableState.progress.fraction in 0.05f..0.95f) 1f
+                    if (leftSwipeableState.isAnimationRunning || leftSwipeableState.currentValue == CenterScreenState.CENTER || leftSwipeableState.progress.fraction in 0.05f..0.95f) 1f
                     else 0.5f
                 }
             }
 
             AnimatedVisibility(
-                modifier = rightSwipeableModifier
+                modifier = leftSwipeableModifier
                     .zIndex(centerScreenZIndex)
                     .offset { IntOffset(x = centerScreenOffset, y = 0) },
                 visible = isAnyItemSelectedInServers,
@@ -139,12 +137,15 @@ fun RightTwoPanelsScreen() {
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxHeight()
+                        .fillMaxWidth(0.85f)
                         .background(Color.Magenta)
                 ) {
                     Text(text = "center panel screen")
                 }
             }
         }
+
+
     }
 }
