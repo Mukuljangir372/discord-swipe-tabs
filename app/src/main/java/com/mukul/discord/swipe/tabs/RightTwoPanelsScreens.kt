@@ -50,20 +50,20 @@ fun TwoPanelsScreen() {
             mutableStateOf(with(density) { rightEndpointDp.toPx() })
         }
 
-        val swipeableState =
+        val rightSwipeableState =
             rememberSwipeableState(initialValue = CenterScreenState.RIGHT_ANCHORED)
 
-        val anchors = mapOf(
+        val rightAnchors = mapOf(
             screenCenterPx to CenterScreenState.CENTER,
             rightEndpointPx to CenterScreenState.RIGHT_ANCHORED
         )
 
-        val drawerOnTop by remember {
+        val rightDrawerOnTop by remember {
             derivedStateOf {
-                when (swipeableState.currentValue) {
+                when (rightSwipeableState.currentValue) {
                     CenterScreenState.LEFT_ANCHORED -> DrawerTypes.RIGHT
                     CenterScreenState.CENTER -> {
-                        if (swipeableState.direction < 0) DrawerTypes.RIGHT
+                        if (rightSwipeableState.direction < 0) DrawerTypes.RIGHT
                         else DrawerTypes.LEFT
                     }
                     CenterScreenState.RIGHT_ANCHORED -> DrawerTypes.LEFT
@@ -73,12 +73,12 @@ fun TwoPanelsScreen() {
 
         val isAnyItemSelectedInServers: Boolean by remember { mutableStateOf(true) }
 
-        val swipeableModifier by remember(isAnyItemSelectedInServers) {
+        val rightSwipeableModifier by remember(isAnyItemSelectedInServers) {
             mutableStateOf(
                 if (isAnyItemSelectedInServers) {
                     Modifier.swipeable(
-                        state = swipeableState,
-                        anchors = anchors,
+                        state = rightSwipeableState,
+                        anchors = rightAnchors,
                         thresholds = { _, _ -> FractionalThreshold(0.5f) },
                         orientation = Orientation.Horizontal
                     )
@@ -88,18 +88,18 @@ fun TwoPanelsScreen() {
             )
         }
 
-        val leftDrawerModifier by remember(drawerOnTop, isAnyItemSelectedInServers) {
+        val leftDrawerModifier by remember(rightDrawerOnTop, isAnyItemSelectedInServers) {
             mutableStateOf(
-                swipeableModifier
+                rightSwipeableModifier
                     .zIndex(0f)
-                    .alpha(if (drawerOnTop == DrawerTypes.LEFT) 1f else 0f)
+                    .alpha(if (rightDrawerOnTop == DrawerTypes.LEFT) 1f else 0f)
             )
         }
 
         val centerScreenOffset by remember {
             derivedStateOf {
-                if (drawerOnTop == DrawerTypes.LEFT) {
-                    (swipeableState.offset.value - screenCenterPx).roundToInt()
+                if (rightDrawerOnTop == DrawerTypes.LEFT) {
+                    (rightSwipeableState.offset.value - screenCenterPx).roundToInt()
                 } else {
                     0
                 }
@@ -124,13 +124,13 @@ fun TwoPanelsScreen() {
             // Center Panel ----------------------------------------------------
             val centerScreenZIndex by remember {
                 derivedStateOf {
-                    if (swipeableState.isAnimationRunning || swipeableState.currentValue == CenterScreenState.CENTER || swipeableState.progress.fraction in 0.05f..0.95f) 1f
+                    if (rightSwipeableState.isAnimationRunning || rightSwipeableState.currentValue == CenterScreenState.CENTER || rightSwipeableState.progress.fraction in 0.05f..0.95f) 1f
                     else 0.5f
                 }
             }
 
             AnimatedVisibility(
-                modifier = swipeableModifier
+                modifier = rightSwipeableModifier
                     .zIndex(centerScreenZIndex)
                     .offset { IntOffset(x = centerScreenOffset, y = 0) },
                 visible = isAnyItemSelectedInServers,
