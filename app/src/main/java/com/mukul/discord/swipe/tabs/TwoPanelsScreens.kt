@@ -91,7 +91,7 @@ fun TwoPanelsScreen() {
         val leftDrawerModifier by remember(drawerOnTop, isAnyItemSelectedInServers) {
             mutableStateOf(
                 swipeableModifier
-                    .zIndex(if (drawerOnTop == DrawerTypes.LEFT) 1f else 0f)
+                    .zIndex(0f)
                     .alpha(if (drawerOnTop == DrawerTypes.LEFT) 1f else 0f)
             )
         }
